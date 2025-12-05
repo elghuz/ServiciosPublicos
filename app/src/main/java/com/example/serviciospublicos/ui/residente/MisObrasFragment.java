@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +20,7 @@ import com.example.serviciospublicos.models.Obra;
 import com.example.serviciospublicos.models.enums.EstatusObra;
 import com.example.serviciospublicos.ui.adapters.ObrasAdapter;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,20 +65,44 @@ public class MisObrasFragment extends Fragment {
 
     private void cargarObrasOperador() {
         String uid = auth.getCurrentUid();
-        if (uid == null) return;
+        if (uid == null) {
+            Toast.makeText(getContext(), "No hay usuario autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         firestore.getUsuario(uid).addOnSuccessListener(userDoc -> {
-            List<String> obrasAsignadas = (List<String>) userDoc.get("obrasAsignadas");
-            if (obrasAsignadas == null || obrasAsignadas.isEmpty()) {
+            if (!userDoc.exists()) {
+                Toast.makeText(getContext(), "Usuario no encontrado en Firestore", Toast.LENGTH_SHORT).show();
                 adapter.setObras(new ArrayList<>());
                 return;
             }
 
-            // OJO: whereIn solo acepta hasta 10 elementos en Firestore
+            @SuppressWarnings("unchecked")
+            List<String> obrasAsignadas = (List<String>) userDoc.get("obrasAsignadas");
+
+            if (obrasAsignadas == null) {
+                Toast.makeText(getContext(), "El usuario no tiene campo 'obrasAsignadas'", Toast.LENGTH_SHORT).show();
+                adapter.setObras(new ArrayList<>());
+                return;
+            }
+
+            if (obrasAsignadas.isEmpty()) {
+                Toast.makeText(getContext(), "No tienes obras asignadas", Toast.LENGTH_SHORT).show();
+                adapter.setObras(new ArrayList<>());
+                return;
+            }
+
+            // Firestore whereIn máximo 10 elementos → para pruebas es suficiente
             firestore.getObrasCollection()
-                    .whereIn("id", obrasAsignadas)
+                    .whereIn(FieldPath.documentId(), obrasAsignadas)   // 👈 usamos el ID del documento
                     .get()
                     .addOnSuccessListener(querySnapshot -> {
+                        if (querySnapshot.isEmpty()) {
+                            Toast.makeText(getContext(), "No se encontraron obras con esos IDs", Toast.LENGTH_SHORT).show();
+                            adapter.setObras(new ArrayList<>());
+                            return;
+                        }
+
                         List<Obra> lista = new ArrayList<>();
                         for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                             Obra obra = new Obra();
@@ -91,7 +117,13 @@ public class MisObrasFragment extends Fragment {
                             lista.add(obra);
                         }
                         adapter.setObras(lista);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getContext(), "Error al cargar obras asignadas", Toast.LENGTH_SHORT).show();
                     });
+
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Error al obtener usuario", Toast.LENGTH_SHORT).show();
         });
     }
 }

@@ -1,5 +1,7 @@
 package com.example.serviciospublicos.ui.admin;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -17,12 +19,15 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.Navigation;
 
 import com.example.serviciospublicos.R;
 import com.example.serviciospublicos.firebase.FirestoreService;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -43,12 +48,14 @@ import java.util.List;
 
 public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
 
+    private static final int REQ_LOCATION_PERMISSION_ADMIN = 2101;
+
     private EditText inputNombre, inputDescripcion, inputRadio;
     private Spinner spinnerSupervisor;
     private RadioGroup radioGroupTipo;
     private RadioButton radioPunto, radioRadio, radioPoligono;
     private Button btnGuardar;
-    private ProgressBar progressBar;
+    private ProgressBar progressBar; // opcional si quieres feedback
 
     private final FirestoreService firestore = FirestoreService.getInstance();
 
@@ -63,6 +70,9 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
     // Supervisores
     private final List<String> supervisorNames = new ArrayList<>();
     private final List<String> supervisorUids = new ArrayList<>();
+
+    // Ubicación admin
+    private FusedLocationProviderClient fusedLocationClient;
 
     public CrearObraFragment() { }
 
@@ -88,10 +98,13 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
         radioRadio = view.findViewById(R.id.radioRadio);
         radioPoligono = view.findViewById(R.id.radioPoligono);
         btnGuardar = view.findViewById(R.id.btnGuardarObra);
-        // progressBar = view.findViewById(R.id.progressBarCrearObra); // si la agregas al layout
+        // progressBar = view.findViewById(R.id.progressBarCrearObra);
 
         // Marca "Punto" por defecto
         radioPunto.setChecked(true);
+
+        // Cliente de ubicación
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         // Cargar mapa dentro de mapContainer
         initMap();
@@ -117,9 +130,8 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(@NonNull GoogleMap gMap) {
         googleMap = gMap;
 
-        // Mover cámara a una posición base (ej. CDMX)
-        LatLng base = new LatLng(19.4326, -99.1332);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(base, 12f));
+        // Intentar centrar en la ubicación actual del admin
+        centrarEnUbicacionActual();
 
         googleMap.setOnMapClickListener(latLng -> {
             int checkedId = radioGroupTipo.getCheckedRadioButtonId();
@@ -148,6 +160,49 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
+    }
+
+    private void centrarEnUbicacionActual() {
+        if (googleMap == null) return;
+
+        // Si no tenemos permiso, lo pedimos y mientras usamos CDMX como fallback
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQ_LOCATION_PERMISSION_ADMIN
+            );
+
+            // Fallback inicial (CDMX) por si no da permiso todavía
+            LatLng base = new LatLng(19.4326, -99.1332);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(base, 12f));
+            return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        LatLng here = new LatLng(location.getLatitude(), location.getLongitude());
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(here, 16f));
+
+                        // Usamos esta ubicación como centro por defecto
+                        selectedCenter = here;
+                        polygonPoints.clear();
+                        redrawPolygon();
+
+                        if (marker != null) marker.remove();
+                        marker = googleMap.addMarker(new MarkerOptions().position(here));
+                    } else {
+                        // Si no hay lastLocation, usamos CDMX
+                        LatLng base = new LatLng(19.4326, -99.1332);
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(base, 12f));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    LatLng base = new LatLng(19.4326, -99.1332);
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(base, 12f));
+                });
     }
 
     private void redrawCircle() {
@@ -182,6 +237,19 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
         if (polygonPoints.size() >= 3) {
             polygon = googleMap.addPolygon(new PolygonOptions()
                     .addAll(polygonPoints));
+        }
+    }
+
+    // Permiso de ubicación respuesta
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQ_LOCATION_PERMISSION_ADMIN) {
+            // Si dio permiso después, volvemos a intentar centrar
+            centrarEnUbicacionActual();
         }
     }
 

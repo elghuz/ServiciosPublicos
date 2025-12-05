@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <!-- LOGIN -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.serviciospublicos.auth.LoginFragment"
+        android:label="Iniciar sesión"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_login_to_adminPanelFragment"
+            app:destination="@id/adminPanelFragment" />
+
+        <action
+            android:id="@+id/action_login_to_obrasSupervisorFragment"
+            app:destination="@id/obrasSupervisorFragment" />
+
+        <action
+            android:id="@+id/action_login_to_misObrasFragment"
+            app:destination="@id/misObrasFragment" />
+    </fragment>
+
+    <!-- HOME ADMIN -->
+    <fragment
+        android:id="@+id/adminPanelFragment"
+        android:name="com.example.serviciospublicos.ui.admin.AdminPanelFragment"
+        android:label="Panel administrador"
+        tools:layout="@layout/fragment_admin_panel" />
+
+    <!-- HOME SUPERVISOR -->
+    <fragment
+        android:id="@+id/obrasSupervisorFragment"
+        android:name="com.example.serviciospublicos.ui.supervisor.ObrasSupervisorFragment"
+        android:label="Obras supervisor"
+        tools:layout="@layout/fragment_obras_supervisor" />
+
+    <!-- HOME OPERADOR -->
+    <fragment
+        android:id="@+id/misObrasFragment"
+        android:name="com.example.serviciospublicos.ui.residente.MisObrasFragment"
+        android:label="Mis obras"
+        tools:layout="@layout/fragment_mis_obras" />
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.serviciospublicos.auth.LoginFragment"
+        android:label="Iniciar sesión"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_login_to_adminPanelFragment"
+            app:destination="@id/adminPanelFragment" />
+
+        <action
+            android:id="@+id/action_login_to_obrasSupervisorFragment"
+            app:destination="@id/obrasSupervisorFragment" />
+
+        <action
+            android:id="@+id/action_login_to_misObrasFragment"
+            app:destination="@id/misObrasFragment" />
+
+        <!-- NUEVO: ir a registro -->
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.serviciospublicos.auth.RegisterFragment"
+        android:label="Crear cuenta"
+        tools:layout="@layout/fragment_register">
+
+        <action
+            android:id="@+id/action_registerFragment_to_adminPanelFragment"
+            app:destination="@id/adminPanelFragment" />
+
+        <action
+            android:id="@+id/action_registerFragment_to_obrasSupervisorFragment"
+            app:destination="@id/obrasSupervisorFragment" />
+
+        <action
+            android:id="@+id/action_registerFragment_to_misObrasFragment"
+            app:destination="@id/misObrasFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminPanelFragment"
+        android:name="com.example.serviciospublicos.ui.admin.AdminPanelFragment"
+        android:label="Panel administrador"
+        tools:layout="@layout/fragment_admin_panel">
+
+        <action
+            android:id="@+id/action_adminPanelFragment_to_adminObrasFragment"
+            app:destination="@id/adminObrasFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminObrasFragment"
+        android:name="com.example.serviciospublicos.ui.admin.AdminObrasFragment"
+        android:label="Obras"
+        tools:layout="@layout/fragment_admin_obras">
+
+        <action
+            android:id="@+id/action_adminObrasFragment_to_crearObraFragment"
+            app:destination="@id/crearObraFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/crearObraFragment"
+        android:name="com.example.serviciospublicos.ui.admin.CrearObraFragment"
+        android:label="Crear obra"
+        tools:layout="@layout/fragment_crear_obra" />
+
+
+
+</navigation>

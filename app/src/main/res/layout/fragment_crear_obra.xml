@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <EditText
+            android:id="@+id/inputNombreObra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre de la obra" />
+
+        <EditText
+            android:id="@+id/inputDescripcionObra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Descripción"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/inputSupervisorUid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="UID Supervisor"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/inputLat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Latitud"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/inputLng"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Longitud"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/inputRadio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Radio (metros)"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnGuardarObra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Guardar obra"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>

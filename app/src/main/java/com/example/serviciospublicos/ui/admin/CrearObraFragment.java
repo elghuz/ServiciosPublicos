@@ -23,7 +23,6 @@ import androidx.navigation.Navigation;
 
 import com.example.serviciospublicos.R;
 import com.example.serviciospublicos.firebase.FirestoreService;
-import com.example.serviciospublicos.models.enums.EstatusObra;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -36,6 +35,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
     private RadioGroup radioGroupTipo;
     private RadioButton radioPunto, radioRadio, radioPoligono;
     private Button btnGuardar;
-    private ProgressBar progressBar; // opcional si quieres feedback
+    private ProgressBar progressBar;
 
     private final FirestoreService firestore = FirestoreService.getInstance();
 
@@ -88,6 +88,7 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
         radioRadio = view.findViewById(R.id.radioRadio);
         radioPoligono = view.findViewById(R.id.radioPoligono);
         btnGuardar = view.findViewById(R.id.btnGuardarObra);
+        // progressBar = view.findViewById(R.id.progressBarCrearObra); // si la agregas al layout
 
         // Marca "Punto" por defecto
         radioPunto.setChecked(true);
@@ -265,23 +266,28 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
         Double lat = null;
         Double lng = null;
         Double radioMetros = null;
+        List<GeoPoint> poligonoGeo = null;
 
-        if (selectedCenter != null && !ubicacionTipo.equals("poligono")) {
-            lat = selectedCenter.latitude;
-            lng = selectedCenter.longitude;
-        }
-
-        if (ubicacionTipo.equals("radio")) {
-            try {
-                radioMetros = Double.parseDouble(inputRadio.getText().toString().trim());
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Radio inválido", Toast.LENGTH_SHORT).show();
-                return;
+        if ("poligono".equals(ubicacionTipo)) {
+            poligonoGeo = new ArrayList<>();
+            for (LatLng p : polygonPoints) {
+                poligonoGeo.add(new GeoPoint(p.latitude, p.longitude));
+            }
+        } else {
+            if (selectedCenter != null) {
+                lat = selectedCenter.latitude;
+                lng = selectedCenter.longitude;
+            }
+            if ("radio".equals(ubicacionTipo)) {
+                try {
+                    radioMetros = Double.parseDouble(inputRadio.getText().toString().trim());
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getContext(), "Radio inválido", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
         }
 
-        // De momento FirestoreService.createObra maneja punto/radio,
-        // para polígono luego lo extendemos para guardar la lista de puntos.
         firestore.createObra(
                 nombre,
                 descripcion,
@@ -290,7 +296,8 @@ public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
                 ubicacionTipo,
                 lat,
                 lng,
-                radioMetros
+                radioMetros,
+                poligonoGeo
         ).addOnSuccessListener(aVoid -> {
             Toast.makeText(getContext(), "Obra creada correctamente", Toast.LENGTH_SHORT).show();
             Navigation.findNavController(requireView()).popBackStack();

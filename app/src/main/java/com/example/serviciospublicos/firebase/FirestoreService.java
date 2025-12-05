@@ -9,14 +9,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FirestoreService {
+public class FirestoreService {private static FirestoreService instance;
 
-    private static FirestoreService instance;
     private final FirebaseFirestore db;
 
     private static final String USERS_COLLECTION = "Usuarios";
@@ -25,14 +25,6 @@ public class FirestoreService {
 
     private FirestoreService() {
         db = FirebaseFirestore.getInstance();
-    }
-
-    // ---------- USUARIOS (consulta supervisores) ----------
-
-    public Task<QuerySnapshot> getSupervisores() {
-        return db.collection(USERS_COLLECTION)
-                .whereEqualTo("rol", "SUPERVISOR")
-                .get();
     }
 
     public static synchronized FirestoreService getInstance() {
@@ -65,15 +57,26 @@ public class FirestoreService {
                 .set(data, SetOptions.merge());
     }
 
-    // 👉 MÉTODO NUEVO
     public Task<DocumentSnapshot> getUsuario(@NonNull String uid) {
         return db.collection(USERS_COLLECTION)
                 .document(uid)
                 .get();
     }
 
+    public Task<QuerySnapshot> getSupervisores() {
+        return db.collection(USERS_COLLECTION)
+                .whereEqualTo("rol", "SUPERVISOR")
+                .get();
+    }
+
     // ---------- OBRAS ----------
 
+    /**
+     * Crea una nueva obra pudiendo ser:
+     * - punto
+     * - radio (punto + radioMetros)
+     * - polígono (lista de GeoPoint)
+     */
     public Task<Void> createObra(
             @NonNull String nombre,
             String descripcion,
@@ -82,7 +85,8 @@ public class FirestoreService {
             @NonNull String ubicacionTipo,
             Double lat,
             Double lng,
-            Double radioMetros
+            Double radioMetros,
+            List<GeoPoint> poligono
     ) {
         CollectionReference obrasRef = db.collection(OBRAS_COLLECTION);
         String obraId = obrasRef.document().getId();
@@ -98,6 +102,9 @@ public class FirestoreService {
         if (lat != null) data.put("lat", lat);
         if (lng != null) data.put("lng", lng);
         if (radioMetros != null) data.put("radioMetros", radioMetros);
+        if (poligono != null && !poligono.isEmpty()) {
+            data.put("poligono", poligono);
+        }
 
         data.put("fechaInicio", Timestamp.now());
         data.put("fechaCreacion", Timestamp.now());

@@ -13,6 +13,9 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.WriteBatch;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.Timestamp;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +46,8 @@ public class FirestoreService {private static FirestoreService instance;
                 .get();
     }
 
+
+
     public Task<Void> asignarObraAOperador(
             @NonNull String obraId,
             @NonNull String operadorUid
@@ -56,6 +61,55 @@ public class FirestoreService {private static FirestoreService instance;
         batch.update(obraRef, "operadoresAsignados", FieldValue.arrayUnion(operadorUid));
 
         return batch.commit();
+    }
+
+    // ---------- SUPERVISORES / OBRAS ----------
+
+    // Todas las obras donde este usuario es supervisorAsignado
+    public Task<QuerySnapshot> getObrasPorSupervisor(@NonNull String supervisorUid) {
+        return db.collection(OBRAS_COLLECTION)
+                .whereEqualTo("supervisorAsignado", supervisorUid)
+                .get();
+    }
+
+    // Evidencias pendientes de una obra
+    public Task<QuerySnapshot> getEvidenciasPendientes(@NonNull String obraId) {
+        return db.collection(OBRAS_COLLECTION)
+                .document(obraId)
+                .collection(EVIDENCIAS_SUBCOLLECTION)
+                .whereEqualTo("estado", "pendiente")
+                .orderBy("fechaHora", Query.Direction.DESCENDING)
+                .get();
+    }
+
+    // Cambiar estado de una evidencia (aprobada / rechazada)
+    public Task<Void> actualizarEstadoEvidencia(
+            @NonNull String obraId,
+            @NonNull String evidenciaId,
+            @NonNull String nuevoEstado,       // "aprobada" o "rechazada"
+            String comentarioSupervisor,
+            String supervisorUid,
+            String supervisorNombre
+    ) {
+        DocumentReference evRef = db.collection(OBRAS_COLLECTION)
+                .document(obraId)
+                .collection(EVIDENCIAS_SUBCOLLECTION)
+                .document(evidenciaId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("estado", nuevoEstado);
+        updates.put("fechaRevision", Timestamp.now());
+        if (comentarioSupervisor != null) {
+            updates.put("comentarioSupervisor", comentarioSupervisor);
+        }
+        if (supervisorUid != null) {
+            updates.put("supervisorRevisorUid", supervisorUid);
+        }
+        if (supervisorNombre != null) {
+            updates.put("supervisorRevisorNombre", supervisorNombre);
+        }
+
+        return evRef.update(updates);
     }
 
     // ---------- USUARIOS ----------
@@ -177,4 +231,5 @@ public class FirestoreService {private static FirestoreService instance;
 
         return evidenciasRef.document(evidenciaId).set(data);
     }
+
 }

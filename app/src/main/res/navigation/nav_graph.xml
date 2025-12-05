@@ -105,7 +105,12 @@
         android:id="@+id/obrasSupervisorFragment"
         android:name="com.example.serviciospublicos.ui.supervisor.ObrasSupervisorFragment"
         android:label="Obras supervisor"
-        tools:layout="@layout/fragment_obras_supervisor" />
+        tools:layout="@layout/fragment_obras_supervisor">
+
+        <action
+            android:id="@+id/action_obrasSupervisorFragment_to_evidenciasPendientesFragment"
+            app:destination="@id/evidenciasPendientesFragment" />
+    </fragment>
 
     <!-- HOME OPERADOR: MIS OBRAS -->
     <fragment
@@ -128,6 +133,46 @@
 
         <argument
             android:name="obraId"
+            app:argType="string" />
+    </fragment>
+
+    <!-- EVIDENCIAS PENDIENTES -->
+    <fragment
+        android:id="@+id/evidenciasPendientesFragment"
+        android:name="com.example.serviciospublicos.ui.supervisor.EvidenciasPendientesFragment"
+        android:label="Evidencias pendientes"
+        tools:layout="@layout/fragment_evidencias_pendientes">
+
+        <argument
+            android:name="obraId"
+            app:argType="string" />
+
+        <argument
+            android:name="obraNombre"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_evidenciasPendientesFragment_to_detalleValidacionFragment"
+            app:destination="@id/detalleValidacionFragment" />
+    </fragment>
+
+    <!-- DETALLE VALIDACIÓN -->
+    <fragment
+        android:id="@+id/detalleValidacionFragment"
+        android:name="com.example.serviciospublicos.ui.supervisor.DetalleValidacionFragment"
+        android:label="Detalle evidencia"
+        tools:layout="@layout/fragment_detalle_validacion">
+
+        <argument
+            android:name="obraId"
+            app:argType="string" />
+
+        <argument
+            android:name="obraNombre"
+            app:argType="string" />
+
+        <argument
+            android:name="evidenciaId"
             app:argType="string" />
     </fragment>
 

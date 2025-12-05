@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/txtTipoEvidencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Foto"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/txtUsuarioEvidencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Usuario" />
+
+    <TextView
+        android:id="@+id/txtFechaEvidencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fecha y hora" />
+
+    <TextView
+        android:id="@+id/txtEstadoEvidencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="pendiente"
+        android:textStyle="italic" />
+</LinearLayout>

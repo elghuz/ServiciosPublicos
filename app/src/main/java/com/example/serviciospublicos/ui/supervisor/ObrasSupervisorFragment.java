@@ -4,10 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,8 +50,13 @@ public class ObrasSupervisorFragment extends Fragment {
         recyclerObras = view.findViewById(R.id.recyclerObrasSupervisor);
         recyclerObras.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // Al tocar una obra → ir a EvidenciasPendientesFragment (obraId + obraNombre)
         adapter = new ObrasAdapter(obra -> {
-            // Aquí luego puedes ir a EvidenciasPendientesFragment, etc.
+            Bundle args = new Bundle();
+            args.putString("obraId", obra.getId());
+            args.putString("obraNombre", obra.getNombre());
+            Navigation.findNavController(view)
+                    .navigate(R.id.action_obrasSupervisorFragment_to_evidenciasPendientesFragment, args);
         });
         recyclerObras.setAdapter(adapter);
 
@@ -58,8 +65,13 @@ public class ObrasSupervisorFragment extends Fragment {
 
     private void cargarObrasSupervisor() {
         String uid = auth.getCurrentUid();
-        if (uid == null) return;
+        if (uid == null) {
+            Toast.makeText(getContext(), "No hay usuario autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        // Puedes usar este helper si ya lo agregaste en FirestoreService:
+        // firestore.getObrasPorSupervisor(uid)...
         firestore.getObrasCollection()
                 .whereEqualTo("supervisorAsignado", uid)
                 .get()
@@ -78,6 +90,9 @@ public class ObrasSupervisorFragment extends Fragment {
                         lista.add(obra);
                     }
                     adapter.setObras(lista);
-                });
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Error al cargar obras", Toast.LENGTH_SHORT).show()
+                );
     }
 }

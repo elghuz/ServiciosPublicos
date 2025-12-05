@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txtTipoDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tipo: FOTO"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txtUsuarioDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Usuario: ..."
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/txtFechaDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fecha: ..."
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/txtUbicacionDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ubicación: lat, lng"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/txtDescripcionDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Descripción: ..."
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/txtEtapaDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Etapa: ..."
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/txtEstadoDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Estado: pendiente"
+            android:layout_marginTop="8dp"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/txtUrlArchivo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="URL archivo"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/inputComentarioSupervisor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Comentario del supervisor (opcional)"
+            android:layout_marginTop="16dp"
+            android:minLines="2" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/btnAprobar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Aprobar" />
+
+            <Button
+                android:id="@+id/btnRechazar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Rechazar"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressDetalle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>

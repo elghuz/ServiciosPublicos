@@ -5,24 +5,64 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.Navigation;
 
 import com.example.serviciospublicos.R;
 import com.example.serviciospublicos.firebase.FirestoreService;
+import com.example.serviciospublicos.models.enums.EstatusObra;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
-public class CrearObraFragment extends Fragment {
+import java.util.ArrayList;
+import java.util.List;
 
-    private EditText inputNombre, inputDescripcion, inputSupervisorUid,
-            inputLat, inputLng, inputRadio;
+public class CrearObraFragment extends Fragment implements OnMapReadyCallback {
+
+    private EditText inputNombre, inputDescripcion, inputRadio;
+    private Spinner spinnerSupervisor;
+    private RadioGroup radioGroupTipo;
+    private RadioButton radioPunto, radioRadio, radioPoligono;
+    private Button btnGuardar;
+    private ProgressBar progressBar; // opcional si quieres feedback
 
     private final FirestoreService firestore = FirestoreService.getInstance();
+
+    // Map
+    private GoogleMap googleMap;
+    private Marker marker;
+    private Circle circle;
+    private Polygon polygon;
+    private final List<LatLng> polygonPoints = new ArrayList<>();
+    private LatLng selectedCenter; // para punto / radio
+
+    // Supervisores
+    private final List<String> supervisorNames = new ArrayList<>();
+    private final List<String> supervisorUids = new ArrayList<>();
 
     public CrearObraFragment() { }
 
@@ -41,44 +81,219 @@ public class CrearObraFragment extends Fragment {
 
         inputNombre = view.findViewById(R.id.inputNombreObra);
         inputDescripcion = view.findViewById(R.id.inputDescripcionObra);
-        inputSupervisorUid = view.findViewById(R.id.inputSupervisorUid);
-        inputLat = view.findViewById(R.id.inputLat);
-        inputLng = view.findViewById(R.id.inputLng);
         inputRadio = view.findViewById(R.id.inputRadio);
+        spinnerSupervisor = view.findViewById(R.id.spinnerSupervisor);
+        radioGroupTipo = view.findViewById(R.id.radioGroupTipoUbicacion);
+        radioPunto = view.findViewById(R.id.radioPunto);
+        radioRadio = view.findViewById(R.id.radioRadio);
+        radioPoligono = view.findViewById(R.id.radioPoligono);
+        btnGuardar = view.findViewById(R.id.btnGuardarObra);
 
-        Button btnGuardar = view.findViewById(R.id.btnGuardarObra);
-        btnGuardar.setOnClickListener(v -> guardarObra(v));
+        // Marca "Punto" por defecto
+        radioPunto.setChecked(true);
+
+        // Cargar mapa dentro de mapContainer
+        initMap();
+
+        // Cargar supervisores desde Firestore
+        cargarSupervisores();
+
+        btnGuardar.setOnClickListener(v -> guardarObra());
     }
 
-    private void guardarObra(View v) {
+    // ------------------ MAPA ------------------
+
+    private void initMap() {
+        SupportMapFragment mapFragment = new SupportMapFragment();
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.replace(R.id.mapContainer, mapFragment);
+        transaction.commit();
+
+        mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap gMap) {
+        googleMap = gMap;
+
+        // Mover cámara a una posición base (ej. CDMX)
+        LatLng base = new LatLng(19.4326, -99.1332);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(base, 12f));
+
+        googleMap.setOnMapClickListener(latLng -> {
+            int checkedId = radioGroupTipo.getCheckedRadioButtonId();
+
+            if (checkedId == R.id.radioPoligono) {
+                // Añadir vértice al polígono
+                polygonPoints.add(latLng);
+                redrawPolygon();
+            } else {
+                // Punto o radio → un solo centro
+                selectedCenter = latLng;
+                polygonPoints.clear();
+                redrawPolygon();
+
+                if (marker != null) marker.remove();
+                marker = googleMap.addMarker(new MarkerOptions().position(latLng));
+
+                if (checkedId == R.id.radioRadio) {
+                    redrawCircle();
+                } else {
+                    // Punto simple
+                    if (circle != null) {
+                        circle.remove();
+                        circle = null;
+                    }
+                }
+            }
+        });
+    }
+
+    private void redrawCircle() {
+        if (googleMap == null || selectedCenter == null) return;
+
+        if (circle != null) {
+            circle.remove();
+        }
+
+        double radiusMeters = 0.0;
+        String radioStr = inputRadio.getText().toString().trim();
+        if (!radioStr.isEmpty()) {
+            try {
+                radiusMeters = Double.parseDouble(radioStr);
+            } catch (NumberFormatException ignored) { }
+        }
+
+        if (radiusMeters <= 0) return;
+
+        circle = googleMap.addCircle(new CircleOptions()
+                .center(selectedCenter)
+                .radius(radiusMeters));
+    }
+
+    private void redrawPolygon() {
+        if (googleMap == null) return;
+
+        if (polygon != null) {
+            polygon.remove();
+        }
+
+        if (polygonPoints.size() >= 3) {
+            polygon = googleMap.addPolygon(new PolygonOptions()
+                    .addAll(polygonPoints));
+        }
+    }
+
+    // ------------------ SUPERVISORES ------------------
+
+    private void cargarSupervisores() {
+        firestore.getSupervisores()
+                .addOnSuccessListener(this::llenarSpinnerSupervisores)
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Error al cargar supervisores", Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void llenarSpinnerSupervisores(QuerySnapshot snapshot) {
+        supervisorNames.clear();
+        supervisorUids.clear();
+
+        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+            String nombre = doc.getString("nombre");
+            String correo = doc.getString("correo");
+            String uid = doc.getId();
+
+            supervisorUids.add(uid);
+            supervisorNames.add(nombre + " (" + correo + ")");
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                supervisorNames
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSupervisor.setAdapter(adapter);
+    }
+
+    // ------------------ GUARDAR OBRA ------------------
+
+    private void guardarObra() {
         String nombre = inputNombre.getText().toString().trim();
         String descripcion = inputDescripcion.getText().toString().trim();
-        String supervisorUid = inputSupervisorUid.getText().toString().trim();
-        String latStr = inputLat.getText().toString().trim();
-        String lngStr = inputLng.getText().toString().trim();
-        String radioStr = inputRadio.getText().toString().trim();
 
-        if (TextUtils.isEmpty(nombre) || TextUtils.isEmpty(supervisorUid)) {
-            Toast.makeText(getContext(), "Nombre y supervisor son obligatorios", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(nombre)) {
+            Toast.makeText(getContext(), "Nombre es obligatorio", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Double lat = TextUtils.isEmpty(latStr) ? null : Double.parseDouble(latStr);
-        Double lng = TextUtils.isEmpty(lngStr) ? null : Double.parseDouble(lngStr);
-        Double radio = TextUtils.isEmpty(radioStr) ? null : Double.parseDouble(radioStr);
+        if (spinnerSupervisor.getSelectedItemPosition() == AdapterView.INVALID_POSITION
+                || supervisorUids.isEmpty()) {
+            Toast.makeText(getContext(), "Selecciona un supervisor", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        String supervisorUid = supervisorUids.get(spinnerSupervisor.getSelectedItemPosition());
+
+        int checkedId = radioGroupTipo.getCheckedRadioButtonId();
+        String ubicacionTipo;
+
+        if (checkedId == R.id.radioPoligono) {
+            ubicacionTipo = "poligono";
+            if (polygonPoints.size() < 3) {
+                Toast.makeText(getContext(), "Selecciona al menos 3 puntos en el mapa para el polígono", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } else if (checkedId == R.id.radioRadio) {
+            ubicacionTipo = "radio";
+            if (selectedCenter == null) {
+                Toast.makeText(getContext(), "Haz clic en el mapa para seleccionar el centro", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (TextUtils.isEmpty(inputRadio.getText().toString().trim())) {
+                Toast.makeText(getContext(), "Ingresa un radio en metros", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } else {
+            ubicacionTipo = "punto";
+            if (selectedCenter == null) {
+                Toast.makeText(getContext(), "Haz clic en el mapa para seleccionar la ubicación", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        Double lat = null;
+        Double lng = null;
+        Double radioMetros = null;
+
+        if (selectedCenter != null && !ubicacionTipo.equals("poligono")) {
+            lat = selectedCenter.latitude;
+            lng = selectedCenter.longitude;
+        }
+
+        if (ubicacionTipo.equals("radio")) {
+            try {
+                radioMetros = Double.parseDouble(inputRadio.getText().toString().trim());
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Radio inválido", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        // De momento FirestoreService.createObra maneja punto/radio,
+        // para polígono luego lo extendemos para guardar la lista de puntos.
         firestore.createObra(
                 nombre,
                 descripcion,
                 "INICIANDO",
                 supervisorUid,
-                "radio",
+                ubicacionTipo,
                 lat,
                 lng,
-                radio
+                radioMetros
         ).addOnSuccessListener(aVoid -> {
-            Toast.makeText(getContext(), "Obra creada", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(v).popBackStack();
+            Toast.makeText(getContext(), "Obra creada correctamente", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(requireView()).popBackStack();
         }).addOnFailureListener(e -> {
             Toast.makeText(getContext(), "Error al crear obra", Toast.LENGTH_SHORT).show();
         });

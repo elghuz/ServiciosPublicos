@@ -8,6 +8,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,14 @@ public class FirestoreService {
 
     private FirestoreService() {
         db = FirebaseFirestore.getInstance();
+    }
+
+    // ---------- USUARIOS (consulta supervisores) ----------
+
+    public Task<QuerySnapshot> getSupervisores() {
+        return db.collection(USERS_COLLECTION)
+                .whereEqualTo("rol", "SUPERVISOR")
+                .get();
     }
 
     public static synchronized FirestoreService getInstance() {

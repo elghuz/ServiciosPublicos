@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
 
         <EditText
             android:id="@+id/inputNombreObra"
@@ -22,36 +22,65 @@
             android:hint="Descripción"
             android:layout_marginTop="8dp" />
 
-        <EditText
-            android:id="@+id/inputSupervisorUid"
+        <!-- SUPERVISOR -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="UID Supervisor"
-            android:layout_marginTop="8dp" />
+            android:text="Supervisor"
+            android:layout_marginTop="12dp" />
 
-        <EditText
-            android:id="@+id/inputLat"
+        <Spinner
+            android:id="@+id/spinnerSupervisor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- TIPO UBICACIÓN -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Latitud"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="8dp" />
+            android:text="Tipo de ubicación"
+            android:layout_marginTop="12dp" />
 
-        <EditText
-            android:id="@+id/inputLng"
+        <RadioGroup
+            android:id="@+id/radioGroupTipoUbicacion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Longitud"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="8dp" />
+            android:orientation="horizontal">
 
+            <RadioButton
+                android:id="@+id/radioPunto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Punto" />
+
+            <RadioButton
+                android:id="@+id/radioRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Radio" />
+
+            <RadioButton
+                android:id="@+id/radioPoligono"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Polígono" />
+        </RadioGroup>
+
+        <!-- RADIO EN METROS (solo si se usa radio) -->
         <EditText
             android:id="@+id/inputRadio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Radio (metros)"
+            android:hint="Radio en metros (solo si eliges Radio)"
             android:inputType="numberDecimal"
             android:layout_marginTop="8dp" />
+
+        <!-- MAPA -->
+        <FrameLayout
+            android:id="@+id/mapContainer"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="12dp" />
 
         <Button
             android:id="@+id/btnGuardarObra"

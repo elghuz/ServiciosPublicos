@@ -48,8 +48,11 @@ public class AdminObrasFragment extends Fragment {
         recyclerObras.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new ObrasAdapter(obra -> {
-            // Aquí podrías navegar al detalle de la obra más adelante
-            // Navigation.findNavController(view).navigate(...);
+            Bundle args = new Bundle();
+            args.putString("obraId", obra.getId());
+            args.putString("obraNombre", obra.getNombre());
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.action_adminObrasFragment_to_asignarOperadorFragment, args);
         });
         recyclerObras.setAdapter(adapter);
 

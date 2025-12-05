@@ -10,6 +10,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +35,27 @@ public class FirestoreService {private static FirestoreService instance;
             instance = new FirestoreService();
         }
         return instance;
+    }
+
+    public Task<QuerySnapshot> getOperadores() {
+        return db.collection(USERS_COLLECTION)
+                .whereEqualTo("rol", "OPERADOR")
+                .get();
+    }
+
+    public Task<Void> asignarObraAOperador(
+            @NonNull String obraId,
+            @NonNull String operadorUid
+    ) {
+        WriteBatch batch = db.batch();
+
+        DocumentReference userRef = db.collection(USERS_COLLECTION).document(operadorUid);
+        DocumentReference obraRef = db.collection(OBRAS_COLLECTION).document(obraId);
+
+        batch.update(userRef, "obrasAsignadas", FieldValue.arrayUnion(obraId));
+        batch.update(obraRef, "operadoresAsignados", FieldValue.arrayUnion(operadorUid));
+
+        return batch.commit();
     }
 
     // ---------- USUARIOS ----------

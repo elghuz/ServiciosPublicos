@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,8 +49,12 @@ public class MisObrasFragment extends Fragment {
         recyclerObras = view.findViewById(R.id.recyclerMisObras);
         recyclerObras.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // Cuando el operador toca una obra → ir a CapturarEvidenciaFragment con el obraId
         adapter = new ObrasAdapter(obra -> {
-            // Aquí luego puedes navegar al DetallesObraFragment / CapturarEvidencia
+            Bundle args = new Bundle();
+            args.putString("obraId", obra.getId());
+            Navigation.findNavController(view)
+                    .navigate(R.id.action_misObrasFragment_to_capturarEvidenciaFragment, args);
         });
         recyclerObras.setAdapter(adapter);
 
@@ -67,7 +72,7 @@ public class MisObrasFragment extends Fragment {
                 return;
             }
 
-            // Firestore whereIn máximo 10 elementos. Para pruebas está perfecto.
+            // OJO: whereIn solo acepta hasta 10 elementos en Firestore
             firestore.getObrasCollection()
                     .whereIn("id", obrasAsignadas)
                     .get()

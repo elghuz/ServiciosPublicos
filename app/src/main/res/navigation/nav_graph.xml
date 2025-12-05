@@ -23,52 +23,13 @@
         <action
             android:id="@+id/action_login_to_misObrasFragment"
             app:destination="@id/misObrasFragment" />
-    </fragment>
 
-    <!-- HOME ADMIN -->
-    <fragment
-        android:id="@+id/adminPanelFragment"
-        android:name="com.example.serviciospublicos.ui.admin.AdminPanelFragment"
-        android:label="Panel administrador"
-        tools:layout="@layout/fragment_admin_panel" />
-
-    <!-- HOME SUPERVISOR -->
-    <fragment
-        android:id="@+id/obrasSupervisorFragment"
-        android:name="com.example.serviciospublicos.ui.supervisor.ObrasSupervisorFragment"
-        android:label="Obras supervisor"
-        tools:layout="@layout/fragment_obras_supervisor" />
-
-    <!-- HOME OPERADOR -->
-    <fragment
-        android:id="@+id/misObrasFragment"
-        android:name="com.example.serviciospublicos.ui.residente.MisObrasFragment"
-        android:label="Mis obras"
-        tools:layout="@layout/fragment_mis_obras" />
-    <fragment
-        android:id="@+id/loginFragment"
-        android:name="com.example.serviciospublicos.auth.LoginFragment"
-        android:label="Iniciar sesión"
-        tools:layout="@layout/fragment_login">
-
-        <action
-            android:id="@+id/action_login_to_adminPanelFragment"
-            app:destination="@id/adminPanelFragment" />
-
-        <action
-            android:id="@+id/action_login_to_obrasSupervisorFragment"
-            app:destination="@id/obrasSupervisorFragment" />
-
-        <action
-            android:id="@+id/action_login_to_misObrasFragment"
-            app:destination="@id/misObrasFragment" />
-
-        <!-- NUEVO: ir a registro -->
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
     </fragment>
 
+    <!-- REGISTRO -->
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.serviciospublicos.auth.RegisterFragment"
@@ -88,6 +49,7 @@
             app:destination="@id/misObrasFragment" />
     </fragment>
 
+    <!-- HOME ADMIN -->
     <fragment
         android:id="@+id/adminPanelFragment"
         android:name="com.example.serviciospublicos.ui.admin.AdminPanelFragment"
@@ -99,6 +61,7 @@
             app:destination="@id/adminObrasFragment" />
     </fragment>
 
+    <!-- LISTA OBRAS ADMIN -->
     <fragment
         android:id="@+id/adminObrasFragment"
         android:name="com.example.serviciospublicos.ui.admin.AdminObrasFragment"
@@ -108,14 +71,64 @@
         <action
             android:id="@+id/action_adminObrasFragment_to_crearObraFragment"
             app:destination="@id/crearObraFragment" />
+
+        <action
+            android:id="@+id/action_adminObrasFragment_to_asignarOperadorFragment"
+            app:destination="@id/asignarOperadorFragment" />
     </fragment>
 
+    <!-- CREAR OBRA -->
     <fragment
         android:id="@+id/crearObraFragment"
         android:name="com.example.serviciospublicos.ui.admin.CrearObraFragment"
         android:label="Crear obra"
         tools:layout="@layout/fragment_crear_obra" />
 
+    <!-- ASIGNAR OPERADOR A OBRA -->
+    <fragment
+        android:id="@+id/asignarOperadorFragment"
+        android:name="com.example.serviciospublicos.ui.admin.AsignarOperadorFragment"
+        android:label="Asignar operador"
+        tools:layout="@layout/fragment_asignar_operador">
 
+        <argument
+            android:name="obraId"
+            app:argType="string" />
+
+        <argument
+            android:name="obraNombre"
+            app:argType="string" />
+    </fragment>
+
+    <!-- HOME SUPERVISOR -->
+    <fragment
+        android:id="@+id/obrasSupervisorFragment"
+        android:name="com.example.serviciospublicos.ui.supervisor.ObrasSupervisorFragment"
+        android:label="Obras supervisor"
+        tools:layout="@layout/fragment_obras_supervisor" />
+
+    <!-- HOME OPERADOR: MIS OBRAS -->
+    <fragment
+        android:id="@+id/misObrasFragment"
+        android:name="com.example.serviciospublicos.ui.residente.MisObrasFragment"
+        android:label="Mis obras"
+        tools:layout="@layout/fragment_mis_obras">
+
+        <action
+            android:id="@+id/action_misObrasFragment_to_capturarEvidenciaFragment"
+            app:destination="@id/capturarEvidenciaFragment" />
+    </fragment>
+
+    <!-- CAPTURAR EVIDENCIA -->
+    <fragment
+        android:id="@+id/capturarEvidenciaFragment"
+        android:name="com.example.serviciospublicos.ui.residente.CapturarEvidenciaFragment"
+        android:label="Capturar evidencia"
+        tools:layout="@layout/fragment_capturar_evidencia">
+
+        <argument
+            android:name="obraId"
+            app:argType="string" />
+    </fragment>
 
 </navigation>

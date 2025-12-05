@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/txtNombreObraEvidencia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Obra"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txtInfoUbicacionObra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ubicación de la obra"
+            android:layout_marginTop="4dp" />
+
+        <EditText
+            android:id="@+id/inputDescripcionEvidencia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Descripción de la evidencia"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/inputEtapaConstruccion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Etapa de construcción (ej. cimentación, acabados...)"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/btnTomarFoto"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Tomar foto" />
+
+            <Button
+                android:id="@+id/btnGrabarVideo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Grabar video"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="12dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/txtVideoSeleccionado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Video capturado"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBarEvidencia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>
